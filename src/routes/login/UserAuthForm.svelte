@@ -7,21 +7,16 @@
 	let className: string | undefined | null = undefined;
 	export { className as class };
 	let isLoading = false;
-	async function onSubmit() {
-		isLoading = true;
-		setTimeout(() => {
-			isLoading = false;
-		}, 3000);
-	}
 </script>
 
 <div class={cn('grid gap-6', className)} {...$$restProps}>
-	<form on:submit|preventDefault={onSubmit}>
+	<form method="POST" action="?/register">
 		<div class="grid gap-2">
 			<div class="grid gap-1">
 				<Label class="sr-only" for="email">Email</Label>
 				<Input
 					id="email"
+					name="email"
 					placeholder="name@example.com"
 					type="email"
 					autoCapitalize="none"

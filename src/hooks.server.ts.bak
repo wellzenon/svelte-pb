@@ -1,7 +1,7 @@
+import type { MaybePromise, RequestEvent } from '@sveltejs/kit';
 import PocketBase, { type Admin, type Record } from 'pocketbase';
 import type { TypedPocketBase } from 'typed-pocketbase';
 import type { CollectionRecords } from '../pb/pocketbase-types';
-import type { MaybePromise, RequestEvent, ResolveOptions } from '@sveltejs/kit';
 
 export type HandleFn = (input: {
 	event: RequestEvent & {
@@ -10,12 +10,11 @@ export type HandleFn = (input: {
 			user: Record | Admin | null;
 		};
 	};
-	resolve: (event: RequestEvent, opts?: ResolveOptions) => MaybePromise<Response>;
+	resolve: (event: RequestEvent) => MaybePromise<Response>;
 }) => MaybePromise<boolean>;
 
 export const handle: HandleFn = async ({ event, resolve }) => {
-	const client: TypedPocketBase<CollectionRecords> = new PocketBase('http://localhost:8090');
-	event.locals.pb = client;
+	event.locals.pb = new PocketBase('http://localhost:8090');
 	event.locals.pb.authStore.loadFromCookie(event.request.headers.get('cookie') || '');
 
 	if (event.locals.pb.authStore.isValid) {
