@@ -4,6 +4,7 @@
 	import { Input } from '$components/ui/input';
 	import { Label } from '$components/ui/label';
 	import { cn } from '$lib/utils';
+
 	let className: string | undefined | null = undefined;
 	export { className as class };
 	let isLoading = false;
@@ -29,7 +30,7 @@
 				{#if isLoading}
 					<Icons.spinner class="mr-2 h-4 w-4 animate-spin" />
 				{/if}
-				Sign In with Email
+				Enter with Email
 			</Button>
 		</div>
 	</form>
