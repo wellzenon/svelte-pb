@@ -22,3 +22,12 @@ export const random_password_generate: (max: number, min: number) => string = (m
 		.join('');
 	return randPassword;
 };
+
+export const handleAsync = async <T>(promise: Promise<T>): Promise<[T, null] | [null, Error]> => {
+	try {
+		const data = await promise;
+		return [data, null];
+	} catch (e) {
+		return [null, e as Error];
+	}
+};

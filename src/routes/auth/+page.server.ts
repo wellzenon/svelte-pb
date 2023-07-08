@@ -32,8 +32,7 @@ export const actions: Actions = {
 		}
 	},
 	logout: async ({ locals }) => {
-		locals.pb.authStore.clear();
-
+		console.log(locals.pb.authStore.clear());
 		throw redirect(303, '/auth');
 	}
 };

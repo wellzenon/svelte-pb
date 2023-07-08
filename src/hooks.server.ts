@@ -6,7 +6,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 	event.locals.pb.authStore.loadFromCookie(event.request.headers.get('cookie') || '');
 
 	try {
-		event.locals.pb.authStore.isValid && (await event.locals.pb.collection('users').authRefresh());
+		await event.locals.pb.collection('users').authRefresh();
 	} catch (e) {
 		event.locals.pb.authStore.clear();
 		error((e as ClientResponseError).status, (e as ClientResponseError).message);

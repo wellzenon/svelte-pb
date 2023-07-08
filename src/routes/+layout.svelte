@@ -1,15 +1,12 @@
 <script lang="ts">
-	import type { Record } from 'pocketbase';
 	import '../app.postcss';
-	import Button from '$components/ui/button/Button.svelte';
+	import type { Record } from 'pocketbase';
+	import MainNav from '$components/ui/nav/MainNav.svelte';
+	import { user } from '../store';
 
-	export let data: { user: Record };
+	export let data: { user: Record | null };
+	$user = data?.user;
 </script>
 
-<div class="flex">
-	<p>{data?.user?.email || 'No User'}</p>
-	<form action="/auth?/logout" method="POST">
-		<Button>Logout</Button>
-	</form>
-</div>
+<MainNav />
 <slot />
