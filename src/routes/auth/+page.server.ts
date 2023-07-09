@@ -1,38 +1,51 @@
-import type { ClientResponseError } from 'pocketbase';
-import { error, type Actions, redirect } from '@sveltejs/kit';
-import { random_password_generate } from '$lib/utils';
+import { type Actions, redirect } from '@sveltejs/kit';
+import type { PageServerLoad } from './$types';
+import { handleAsync, random_password_generate } from '$lib/utils';
 
-export const actions: Actions = {
-	register: async ({ locals, request }) => {
+export const load = (async ({ locals }) => {
+	if (locals.pb.authStore.isValid) throw redirect(303, '/');
+}) satisfies PageServerLoad;
+
+export const actions = {
+	auth: async ({ locals, request }) => {
 		const formData = await request.formData();
 		const data = Object.fromEntries([...formData]);
 
-		try {
-			data.password = random_password_generate(10, 50);
-			data.passwordConfirm = data.password;
+		data.password = random_password_generate(10, 50);
+		data.passwordConfirm = data.password;
 
-			await locals.pb.collection('users').create(data);
-			await locals.pb.collection('users').requestVerification(data.email.toString());
+		// Tries do create an user with the email
+		const { error: errorCreate } = await handleAsync(locals.pb.collection('users').create(data));
 
-			const { record } = await locals.pb
-				.collection('users')
-				.authWithPassword(data.email.toString(), data.password);
+		if (!errorCreate) {
+			//Log in to get user ID
+			const { data: authData, error: errorAuth } = await handleAsync(
+				locals.pb.collection('users').authWithPassword(data.email.toString(), data.password)
+			);
 
-			await locals.pb.collection('users').update(record.id, {
-				name: data.email.slice(0, data.email.toString().indexOf('@')).toString()
-			});
-		} catch (err) {
-			if ((err as ClientResponseError)?.status >= 400) {
-				await locals.pb.collection('users').requestPasswordReset(data.email.toString());
+			if (authData) {
+				//Use user ID to update user
+				const { error: errorUpdate } = await handleAsync(
+					locals.pb.collection('users').update(authData.record.id, {
+						name: data.email.slice(0, data.email.toString().indexOf('@')).toString()
+					})
+				);
+				errorUpdate && errorUpdate.throw();
 			} else {
-				error((err as ClientResponseError)?.status, (err as ClientResponseError)?.message);
+				errorAuth && errorAuth.throw();
 			}
-		} finally {
-			locals.pb.authStore.clear();
 		}
+
+		// Send password reset email which will act as a Magic Link
+		const { error: errorReset } = await handleAsync(
+			locals.pb.collection('users').requestPasswordReset(data.email.toString())
+		);
+		errorReset && errorReset.throw();
+
+		locals.pb.authStore.clear();
 	},
 	logout: async ({ locals }) => {
-		console.log(locals.pb.authStore.clear());
+		locals.pb.authStore.clear();
 		throw redirect(303, '/auth');
 	}
-};
+} satisfies Actions;

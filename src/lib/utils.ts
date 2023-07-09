@@ -1,8 +1,8 @@
+import { HttpError, error } from '@sveltejs/kit';
 import { type ClassValue, clsx } from 'clsx';
+import type { ClientResponseError } from 'pocketbase';
 
 import { twMerge } from 'tailwind-merge';
-
-export const serializeNonPOJOs = (obj: object) => JSON.parse(JSON.stringify(obj));
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -11,7 +11,7 @@ export function cn(...inputs: ClassValue[]) {
 export const parseJwt = (token: string) =>
 	JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
 
-export const random_password_generate: (max: number, min: number) => string = (max, min) => {
+export const random_password_generate: (min: number, max: number) => string = (min, max) => {
 	const passwordChars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz#@!%&()/';
 	const randPwLen = Math.floor(Math.random() * (max - min + 1)) + min;
 	const randPassword = Array(randPwLen)
@@ -23,11 +23,23 @@ export const random_password_generate: (max: number, min: number) => string = (m
 	return randPassword;
 };
 
-export const handleAsync = async <T>(promise: Promise<T>): Promise<[T, null] | [null, Error]> => {
+type AsyncError = ((Error & { status?: number }) | ClientResponseError) & {
+	throw: () => HttpError | never;
+};
+
+export const handleAsync = async <T>(
+	promise: Promise<T>
+): Promise<{ data: T | null; error: AsyncError | null }> => {
 	try {
 		const data = await promise;
-		return [data, null];
+		return { data, error: null };
 	} catch (e) {
-		return [null, e as Error];
+		const err: AsyncError = Object.assign({}, e as Error | ClientResponseError, {
+			throw: () => {
+				console.log(err);
+				throw error(err.status || 500, err.message);
+			}
+		});
+		return { data: null, error: err };
 	}
 };

@@ -11,7 +11,7 @@
 </script>
 
 <div class={cn('grid gap-6', className)} {...$$restProps}>
-	<form method="POST" action="?/register">
+	<form method="POST" action="?/auth">
 		<div class="grid gap-2">
 			<div class="grid gap-1">
 				<Label class="sr-only" for="email">Email</Label>
