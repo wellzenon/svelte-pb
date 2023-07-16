@@ -4,6 +4,8 @@ import { handleAsync, random_password_generate } from '$lib/utils';
 
 export const load = (async ({ locals }) => {
 	if (locals.pb.authStore.isValid) throw redirect(303, '/');
+
+	return { providers: locals.pb.collection('users').listAuthMethods() };
 }) satisfies PageServerLoad;
 
 export const actions = {
@@ -43,6 +45,16 @@ export const actions = {
 		errorReset && errorReset.throw();
 
 		locals.pb.authStore.clear();
+		throw redirect(303, `/auth/check-email?email=${encodeURIComponent(data.email.toString())}`);
+	},
+	google: async ({ locals }) => {
+		// const { data, error: errorOAuth2 } = await handleAsync(
+		// 	locals.pb.collection('users').authWithOAuth2({ provider: 'google' })
+		// );
+		// errorOAuth2 && errorOAuth2.throw();
+		const res = await locals.pb.collection('users').authWithOAuth2({ provider: 'google' });
+		console.log({ res });
+		// throw redirect(303, '/');
 	},
 	logout: async ({ locals }) => {
 		locals.pb.authStore.clear();

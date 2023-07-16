@@ -19,6 +19,6 @@ export const load = (async ({ params, locals }) => {
 		locals.pb.collection('users').authWithPassword(email, password)
 	);
 	errorAuth && errorAuth.throw();
-	// throw redirect(303, '/'); //DOES NOT WORK!
-	return { ok: true, message: 'You are logged in!' };
+
+	throw redirect(303, '/');
 }) satisfies PageServerLoad;

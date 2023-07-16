@@ -1,4 +1,4 @@
-import { HttpError, error } from '@sveltejs/kit';
+import { error } from '@sveltejs/kit';
 import { type ClassValue, clsx } from 'clsx';
 import type { ClientResponseError } from 'pocketbase';
 
@@ -7,6 +7,13 @@ import { twMerge } from 'tailwind-merge';
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
+
+export const capitalize = (str: string) => {
+	return str
+		.split(' ')
+		.map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+		.join(' ');
+};
 
 export const parseJwt = (token: string) =>
 	JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
@@ -24,7 +31,7 @@ export const random_password_generate: (min: number, max: number) => string = (m
 };
 
 type AsyncError = ((Error & { status?: number }) | ClientResponseError) & {
-	throw: () => HttpError | never;
+	throw: () => ClientResponseError | never;
 };
 
 export const handleAsync = async <T>(

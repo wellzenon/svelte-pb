@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
 	import { Icons } from '$components/docs';
 	import { Button } from '$components/ui/button';
 	import { Input } from '$components/ui/input';
@@ -11,7 +12,21 @@
 </script>
 
 <div class={cn('grid gap-6', className)} {...$$restProps}>
-	<form method="POST" action="?/auth">
+	<div class="flex flex-col space-y-2 text-center">
+		<h1 class="text-2xl font-semibold tracking-tight">Create an account</h1>
+		<p class="text-sm text-muted-foreground">Enter your email below to create your account</p>
+	</div>
+	<form
+		method="POST"
+		action="/auth?/auth"
+		use:enhance={({ formElement }) => {
+			isLoading = true;
+			return async ({ update }) => {
+				await update({ reset: !!formElement.success });
+				isLoading = false;
+			};
+		}}
+	>
 		<div class="grid gap-2">
 			<div class="grid gap-1">
 				<Label class="sr-only" for="email">Email</Label>
@@ -42,13 +57,4 @@
 			<span class="bg-background px-2 text-muted-foreground"> Or continue with </span>
 		</div>
 	</div>
-	<Button variant="outline" type="button" disabled={isLoading}>
-		{#if isLoading}
-			<Icons.spinner class="mr-2 h-4 w-4 animate-spin" />
-		{:else}
-			<Icons.gitHub class="mr-2 h-4 w-4" />
-		{/if}
-		{' '}
-		Github
-	</Button>
 </div>
